@@ -1,0 +1,113 @@
+:root {
+  --portal-radius: 1rem;
+}
+
+.md-grid {
+  max-width: 76rem;
+}
+
+.hero {
+  padding: 2.5rem 2rem;
+  margin: 0 0 1.8rem;
+  border-radius: var(--portal-radius);
+  background: linear-gradient(135deg, rgba(38, 50, 56, 0.96), rgba(2, 119, 189, 0.88));
+  color: white;
+}
+
+.hero h1,
+.hero h2,
+.hero p {
+  color: white;
+}
+
+.hero .md-button {
+  margin-top: .5rem;
+  margin-right: .5rem;
+}
+
+.portal-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .8rem;
+  margin: 0 0 2rem;
+}
+
+.portal-stats > div {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.1rem;
+  border: .05rem solid var(--md-default-fg-color--lightest);
+  border-radius: .8rem;
+  background: var(--md-default-bg-color);
+}
+
+.portal-stats strong {
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.portal-stats span {
+  margin-top: .25rem;
+  color: var(--md-default-fg-color--light);
+  font-size: .72rem;
+}
+
+.grid.cards > ul > li,
+.grid.cards > li {
+  border-radius: .8rem;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.grid.cards > ul > li:hover,
+.grid.cards > li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .08);
+}
+
+.course-catalogue > ul > li {
+  position: relative;
+}
+
+.course-status {
+  display: inline-block;
+  margin: .45rem 0 .15rem;
+  padding: .18rem .55rem;
+  border: .05rem solid var(--md-default-fg-color--lightest);
+  border-radius: 999px;
+  color: var(--md-default-fg-color--light);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .025em;
+  text-transform: uppercase;
+}
+
+.course-status--live {
+  border-color: rgba(46, 125, 50, .35);
+  background: rgba(46, 125, 50, .10);
+  color: var(--md-typeset-a-color);
+}
+
+.md-typeset table:not([class]) {
+  font-size: .75rem;
+}
+
+@media screen and (max-width: 44rem) {
+  .hero {
+    padding: 1.5rem 1.2rem;
+  }
+
+  .portal-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* Keep the global header focused on the portal identity. */
+.md-header__topic[data-md-component="header-topic"] {
+  display: none;
+}
+
+/* The landing page is intentionally full width; course navigation appears inside courses. */
+.md-content__inner {
+  padding-top: 1.2rem;
+}

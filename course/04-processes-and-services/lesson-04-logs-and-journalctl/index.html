@@ -1,0 +1,7507 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Hands-on infrastructure, cloud, automation and engineering training by James Roberts">
+      
+      
+      
+        <link rel="canonical" href="https://skills.jrwroberts.co.uk/course/04-processes-and-services/lesson-04-logs-and-journalctl/">
+      
+      
+        <link rel="prev" href="../lesson-03-systemd-and-service-management/">
+      
+      
+        <link rel="next" href="../lesson-05-processes-and-services-lab/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Logs & journalctl - Skills Training Portal</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lesson-04-logs-and-journalctl" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Skills Training Portal" class="md-header__button md-logo" aria-label="Skills Training Portal" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Skills Training Portal
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Logs & journalctl
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="cyan"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Skills Training Portal" class="md-nav__button md-logo" aria-label="Skills Training Portal" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Skills Training Portal
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Courses
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Courses
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Administration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linux Administration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../linux-administration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Course Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../start-here/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start Here
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../course-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Course Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_4" id="__nav_2_1_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    00 · Introduction
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    00 · Introduction
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00-introduction/linux-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_5" id="__nav_2_1_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · Command Line
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    01 · Command Line
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01-command-line/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01-command-line/lesson-01-linux-shell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Shell
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01-command-line/lesson-02-working-with-files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01-command-line/lesson-03-viewing-files-and-getting-help/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Viewing Files & Getting Help
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01-command-line/lesson-04-practical-command-line-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Practical Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_6" id="__nav_2_1_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · Filesystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    02 · Filesystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-filesystem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-filesystem/lesson-01-linux-filesystem-hierarchy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filesystem Hierarchy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-filesystem/lesson-02-file-permissions-and-ownership/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Permissions & Ownership
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-filesystem/lesson-03-finding-files-and-links/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Finding Files & Links
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-filesystem/lesson-04-filesystem-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filesystem Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_7" id="__nav_2_1_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · Users & Groups
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    03 · Users & Groups
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-users-and-groups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-users-and-groups/lesson-01-understanding-users-and-groups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understanding Users & Groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-users-and-groups/lesson-02-managing-users-and-groups/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Users & Groups
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-users-and-groups/lesson-03-passwords-and-sudo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Passwords & sudo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-users-and-groups/lesson-04-users-and-groups-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users & Groups Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_8" id="__nav_2_1_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · Processes & Services
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    04 · Processes & Services
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lesson-01-understanding-processes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understanding Processes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lesson-02-managing-processes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Processes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lesson-03-systemd-and-service-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    systemd & Services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logs & journalctl
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lesson-05-processes-and-services-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processes & Services Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_9" id="__nav_2_1_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 · Package Management
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    05 · Package Management
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-package-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-package-management/lesson-01-package-managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Managers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-package-management/lesson-02-installing-software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installing Software
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-package-management/lesson-03-updating-systems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Updating Systems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-package-management/lesson-04-software-repositories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Software Repositories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-package-management/lesson-05-package-management-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package Management Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_10" id="__nav_2_1_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 · Networking
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    06 · Networking
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-networking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-networking/lesson-01-networking-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-networking/lesson-02-ip-addressing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IP Addressing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-networking/lesson-03-network-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-networking/lesson-04-networking-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_11" id="__nav_2_1_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 · Storage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    07 · Storage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-storage/lesson-01-storage-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-storage/lesson-02-partitions-and-filesystems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Partitions & Filesystems
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-storage/lesson-03-mount-points/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mount Points
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-storage/lesson-04-disk-usage-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disk Usage & Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-storage/lesson-05-storage-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_12" id="__nav_2_1_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 · Bash Scripting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    08 · Bash Scripting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-shell-scripting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-shell-scripting/lesson-01-shell-scripting-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scripting Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-shell-scripting/lesson-02-variables-and-input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables & Input
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-shell-scripting/lesson-03-conditions-and-loops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conditions & Loops
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-shell-scripting/lesson-04-functions-and-error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions & Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-shell-scripting/lesson-05-automation-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Automation Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_13" id="__nav_2_1_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 · Linux Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    09 · Linux Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-security/lesson-01-linux-security-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-security/lesson-02-file-permissions-and-ownership/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Permissions & Ownership
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-security/lesson-03-users-passwords-and-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users, Passwords & Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-security/lesson-04-firewalls-and-network-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Firewalls & Network Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-security/lesson-05-security-hardening-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Hardening Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_14" id="__nav_2_1_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    10 · Troubleshooting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-troubleshooting/lesson-01-linux-troubleshooting-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-troubleshooting/lesson-02-systemd-and-service-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    systemd & Service Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-troubleshooting/lesson-03-network-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-troubleshooting/lesson-04-performance-troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-troubleshooting/lesson-05-troubleshooting-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../labs/final-linux-administrator-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Final Administrator Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../resources/linux-command-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git & GitHub
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Git & GitHub
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Course Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2_2" id="__nav_2_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · Introduction to Git
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    01 · Introduction to Git
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/lessons/01-what-is-git/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What Is Git
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/lessons/02-git-vs-github/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git vs GitHub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/lessons/03-git-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/lessons/04-git-in-devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git in DevOps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/exercises/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exercises
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First Repository Lab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/01-introduction/knowledge-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge Check
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/02-git-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · Git Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/03-branching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · Branching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/04-merging-conflicts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · Merging & Conflicts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/05-remote-repositories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 · Remote Repositories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/06-github-collaboration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 · GitHub Collaboration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/07-github-features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 · GitHub Features
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/08-tags-releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 · Tags & Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/09-git-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 · Git Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/10-advanced-git/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Advanced Git
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/11-git-devops/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Git for DevOps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/modules/12-best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12 · Git Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/labs/final-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Final Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/git-github/docs/git-cheat-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git Command Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Enterprise Administration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    GitHub Enterprise Administration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Course Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_2" id="__nav_2_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · Introduction to GitHub Enterprise
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    01 · Introduction to GitHub Enterprise
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/01-introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/01-introduction/01-what-is-github-enterprise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What Is GitHub Enterprise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/01-introduction/02-github-enterprise-server-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Enterprise Server Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/01-introduction/03-core-github-enterprise-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core GitHub Enterprise Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/01-introduction/04-github-enterprise-deployment-models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Enterprise Deployment Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/01-introduction/05-github-enterprise-security-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Enterprise Security Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/01-introduction/06-github-enterprise-administration-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Enterprise Administration Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_3" id="__nav_2_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · Planning Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    02 · Planning Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/02-planning-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/02-planning-deployment/07-planning-local-github-enterprise-server-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Planning a Local GHES Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/02-planning-deployment/08-hardware-and-resource-requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware and Resource Requirements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/02-planning-deployment/09-network-and-dns-planning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network and DNS Planning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/02-planning-deployment/10-storage-and-backup-planning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage and Backup Planning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/02-planning-deployment/11-licensing-and-prerequisites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Licensing and Prerequisites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/02-planning-deployment/12-deployment-planning-checklist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Planning Checklist
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_4" id="__nav_2_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · Lab Environment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    03 · Lab Environment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/03-lab-environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/03-lab-environment/13-building-the-github-enterprise-server-lab-environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building the GHES Lab Environment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_5" id="__nav_2_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · Installation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    04 · Installation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/04-installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/04-installation/14-installing-github-enterprise-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installing GitHub Enterprise Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_6" id="__nav_2_3_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 · Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    05 · Configuration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/05-configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/05-configuration/15-initial-configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Initial Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/05-configuration/16-configuring-github-enterprise-server-and-creating-your-first-organisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configure GHES and First Organisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_7" id="__nav_2_3_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 · Identity Management
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    06 · Identity Management
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/06-identity-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/06-identity-management/17-users-teams-and-organisations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users Teams and Organisations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/06-identity-management/18-authentication-providers-and-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication Providers and Access Control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_8" id="__nav_2_3_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 · Repository Administration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    07 · Repository Administration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/07-repository-administration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/07-repository-administration/19-creating-your-first-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating Your First Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/07-repository-administration/20-connecting-git-clients-and-working-with-the-enterprise-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connecting Git Clients
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/07-repository-administration/21-repository-settings-and-configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Settings and Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/07-repository-administration/22-branch-protection-and-repository-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Branch Protection and Repository Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/07-repository-administration/23-repository-backup-migration-and-lifecycle-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backup Migration and Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_9" id="__nav_2_3_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 · Security & Governance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    08 · Security & Governance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/08-security-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/08-security-governance/24-github-enterprise-security-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Enterprise Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/08-security-governance/25-repository-security-controls/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository Security Controls
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/08-security-governance/26-secret-scanning-and-code-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Secret Scanning and Code Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/08-security-governance/27-audit-logging-and-security-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Logging and Security Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/08-security-governance/28-security-policies-and-governance-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Policies and Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_10" id="__nav_2_3_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 · GitHub Actions CI/CD
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    09 · GitHub Actions CI/CD
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/09-github-actions-cicd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/09-github-actions-cicd/29-github-actions-architecture-and-runners/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Actions Architecture and Runners
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/09-github-actions-cicd/30-building-cicd-pipelines-with-github-actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building CI/CD Pipelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_11" id="__nav_2_3_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Operations
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    10 · Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/10-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/10-operations/31-managing-github-enterprise-server-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing GHES Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3_12" id="__nav_2_3_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Final Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_3_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    11 · Final Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/11-final-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/github-enterprise/modules/11-final-project/32-github-enterprise-complete-engineering-workflow-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Complete Engineering Workflow Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring & Observability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Monitoring & Observability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Course Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/01-observability-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · Observability Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/02-prometheus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · Prometheus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/03-exporters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · Exporters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/04-grafana/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · Grafana
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/05-loki-and-logging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 · Loki & Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/06-alerting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 · Alerting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/07-security-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 · Security Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/08-performance-and-capacity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 · Performance & Capacity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/09-production-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 · Production Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/monitoring-observability/modules/10-final-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Final Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ansible Automation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ansible Automation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Course Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/01-ansible-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · Ansible Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/02-ad-hoc-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · Ad Hoc Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/03-playbooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · Playbooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/04-inventory-and-variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · Inventory & Variables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/05-roles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 · Roles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/06-templates-and-files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 · Templates & Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/07-secrets-and-security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 · Secrets & Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/08-linux-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 · Linux Automation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/09-testing-and-cicd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 · Testing & CI/CD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/10-troubleshooting-and-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Troubleshooting & Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/ansible/modules/11-final-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Final Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terraform & Infrastructure as Code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Terraform & Infrastructure as Code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Course Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/01-infrastructure-as-code-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    01 · Infrastructure as Code Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/02-installation-and-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    02 · Installation & CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/03-hcl-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 · HCL Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/04-terraform-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 · Terraform Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/05-state-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 · State Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/06-modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    06 · Modules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/07-aws-with-terraform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    07 · AWS with Terraform
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/08-azure-with-terraform/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    08 · Azure with Terraform
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/09-testing-and-quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    09 · Testing & Quality
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/10-cicd-and-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · CI/CD & Governance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../courses/terraform/modules/11-final-project/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Final Project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://me.jrwroberts.co.uk" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engineering Portfolio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="lesson-04-logs-and-journalctl">Lesson 04 - Logs and journalctl<a class="headerlink" href="#lesson-04-logs-and-journalctl" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Estimated time:</strong> 60–90 minutes  </p>
+<p><strong>Prerequisites:</strong>
+- Module 04 – Processes and Services
+- Lesson 03 – Systemd and Service Management</p>
+<p><strong>Difficulty:</strong> Beginner to Intermediate</p>
+<p><strong>Hands-on exercises:</strong> Yes</p>
+</blockquote>
+<hr />
+<h1 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h1>
+<p>Linux systems generate a large amount of information about what is happening on the system.</p>
+<p>This information is stored in logs.</p>
+<p>Logs help administrators:</p>
+<ul>
+<li>Troubleshoot problems</li>
+<li>Investigate service failures</li>
+<li>Monitor system activity</li>
+<li>Identify security events</li>
+<li>Understand system behaviour</li>
+</ul>
+<p>Modern Linux systems use <strong>systemd-journald</strong> to collect and manage system logs.</p>
+<p>The main tool used to view these logs is:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>journalctl
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Linux<span class="w"> </span>Logging
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Linux<span class="w"> </span>records<span class="w"> </span>information<span class="w"> </span>about:
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>System<span class="w"> </span>startup
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Running<span class="w"> </span>services
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>User<span class="w"> </span>activity
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>Hardware<span class="w"> </span>events
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>Application<span class="w"> </span>messages
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>Security<span class="w"> </span>events
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>Examples<span class="w"> </span>of<span class="w"> </span>logs:
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>Log<span class="w"> </span>Type<span class="w">    </span>Example
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>Authentication<span class="w">  </span>SSH<span class="w"> </span>login<span class="w"> </span>attempts
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>System<span class="w">  </span>Kernel<span class="w"> </span>messages
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>Services<span class="w">    </span>Service<span class="w"> </span>startup<span class="w"> </span>failures
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>Applications<span class="w">    </span>Application<span class="w"> </span>errors
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>Traditional<span class="w"> </span>Log<span class="w"> </span>Files
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>Historically,<span class="w"> </span>Linux<span class="w"> </span>stored<span class="w"> </span>logs<span class="w"> </span><span class="k">in</span>:
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>/var/log
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>View<span class="w"> </span>the<span class="w"> </span>directory:
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>ls<span class="w"> </span>/var/log
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>Common<span class="w"> </span>log<span class="w"> </span>files:
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>File<span class="w">    </span>Purpose
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>auth.log<span class="w">    </span>Authentication<span class="w"> </span>events
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>syslog<span class="w">  </span>General<span class="w"> </span>system<span class="w"> </span>messages
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>kern.log<span class="w">    </span>Kernel<span class="w"> </span>messages
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>dpkg.log<span class="w">    </span>Package<span class="w"> </span>management<span class="w"> </span>events
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>Example:
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>cat<span class="w"> </span>/var/log/syslog
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>systemd<span class="w"> </span>Journal
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>Modern<span class="w"> </span>Linux<span class="w"> </span>distributions<span class="w"> </span>use<span class="w"> </span>the<span class="w"> </span>systemd<span class="w"> </span>journal.
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>The<span class="w"> </span>journal<span class="w"> </span>collects<span class="w"> </span>messages<span class="w"> </span>from:
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>The<span class="w"> </span>kernel
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>System<span class="w"> </span>services
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>Applications
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>User<span class="w"> </span>sessions
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>The<span class="w"> </span>journal<span class="w"> </span>is<span class="w"> </span>managed<span class="w"> </span>by:
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>systemd-journald
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>Check<span class="w"> </span>the<span class="w"> </span>service:
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>systemctl<span class="w"> </span>status<span class="w"> </span>systemd-journald
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>Viewing<span class="w"> </span>Logs<span class="w"> </span>with<span class="w"> </span>journalctl
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>The<span class="w"> </span>basic<span class="w"> </span>command:
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>journalctl
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>displays<span class="w"> </span>the<span class="w"> </span>system<span class="w"> </span>journal.
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>Example:
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>Jul<span class="w"> </span><span class="m">31</span><span class="w"> </span><span class="m">10</span>:15:01<span class="w"> </span>server<span class="w"> </span>systemd<span class="o">[</span><span class="m">1</span><span class="o">]</span>:<span class="w"> </span>Started<span class="w"> </span>SSH<span class="w"> </span>service.
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>Jul<span class="w"> </span><span class="m">31</span><span class="w"> </span><span class="m">10</span>:15:02<span class="w"> </span>server<span class="w"> </span>sshd<span class="o">[</span><span class="m">500</span><span class="o">]</span>:<span class="w"> </span>Accepted<span class="w"> </span>password<span class="w"> </span>login.
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>Viewing<span class="w"> </span>Recent<span class="w"> </span>Logs
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>Show<span class="w"> </span>the<span class="w"> </span>latest<span class="w"> </span>log<span class="w"> </span>entries:
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>journalctl<span class="w"> </span>-n
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>Example:
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>journalctl<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>This<span class="w"> </span>displays<span class="w"> </span>the<span class="w"> </span>last<span class="w"> </span><span class="m">50</span><span class="w"> </span>entries.
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>Following<span class="w"> </span>Live<span class="w"> </span>Logs
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>Similar<span class="w"> </span>to<span class="w"> </span>tail<span class="w"> </span>-f:
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>journalctl<span class="w"> </span>-f
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>This<span class="w"> </span>displays<span class="w"> </span>new<span class="w"> </span>log<span class="w"> </span>entries<span class="w"> </span>as<span class="w"> </span>they<span class="w"> </span>appear.
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>Useful<span class="w"> </span>when:
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>Starting<span class="w"> </span>services
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>Testing<span class="w"> </span>changes
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>Troubleshooting<span class="w"> </span>problems
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>Exit<span class="w"> </span>using:
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>CTRL<span class="w"> </span>+<span class="w"> </span>C
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>Viewing<span class="w"> </span>Logs<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>Service
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>To<span class="w"> </span>view<span class="w"> </span>logs<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>specific<span class="w"> </span>service:
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>service_name
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>Example:
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>ssh
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>This<span class="w"> </span>shows<span class="w"> </span>only<span class="w"> </span>SSH<span class="w"> </span>service<span class="w"> </span>logs.
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>Viewing<span class="w"> </span>Recent<span class="w"> </span>Service<span class="w"> </span>Failures
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>Show<span class="w"> </span>recent<span class="w"> </span>errors:
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>journalctl<span class="w"> </span>-p<span class="w"> </span>err
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>Example<span class="w"> </span>output:
+<a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a>
+<a id="__codelineno-0-120" name="__codelineno-0-120" href="#__codelineno-0-120"></a>Failed<span class="w"> </span>to<span class="w"> </span>start<span class="w"> </span>nginx.service
+<a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a>
+<a id="__codelineno-0-122" name="__codelineno-0-122" href="#__codelineno-0-122"></a>Priority<span class="w"> </span>levels<span class="w"> </span>include:
+<a id="__codelineno-0-123" name="__codelineno-0-123" href="#__codelineno-0-123"></a>
+<a id="__codelineno-0-124" name="__codelineno-0-124" href="#__codelineno-0-124"></a>Level<span class="w">   </span>Meaning
+<a id="__codelineno-0-125" name="__codelineno-0-125" href="#__codelineno-0-125"></a>emerg<span class="w">   </span>System<span class="w"> </span>unusable
+<a id="__codelineno-0-126" name="__codelineno-0-126" href="#__codelineno-0-126"></a>alert<span class="w">   </span>Immediate<span class="w"> </span>action<span class="w"> </span>required
+<a id="__codelineno-0-127" name="__codelineno-0-127" href="#__codelineno-0-127"></a>crit<span class="w">    </span>Critical<span class="w"> </span>error
+<a id="__codelineno-0-128" name="__codelineno-0-128" href="#__codelineno-0-128"></a>err<span class="w"> </span>Error
+<a id="__codelineno-0-129" name="__codelineno-0-129" href="#__codelineno-0-129"></a>warning<span class="w"> </span>Warning
+<a id="__codelineno-0-130" name="__codelineno-0-130" href="#__codelineno-0-130"></a>info<span class="w">    </span>Information
+<a id="__codelineno-0-131" name="__codelineno-0-131" href="#__codelineno-0-131"></a>debug<span class="w">   </span>Debug<span class="w"> </span>messages
+<a id="__codelineno-0-132" name="__codelineno-0-132" href="#__codelineno-0-132"></a>Viewing<span class="w"> </span>Logs<span class="w"> </span>Since<span class="w"> </span>Boot
+<a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a>
+<a id="__codelineno-0-134" name="__codelineno-0-134" href="#__codelineno-0-134"></a>View<span class="w"> </span>logs<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>current<span class="w"> </span>boot:
+<a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a>
+<a id="__codelineno-0-136" name="__codelineno-0-136" href="#__codelineno-0-136"></a>journalctl<span class="w"> </span>-b
+<a id="__codelineno-0-137" name="__codelineno-0-137" href="#__codelineno-0-137"></a>
+<a id="__codelineno-0-138" name="__codelineno-0-138" href="#__codelineno-0-138"></a>This<span class="w"> </span>is<span class="w"> </span>useful<span class="w"> </span>after:
+<a id="__codelineno-0-139" name="__codelineno-0-139" href="#__codelineno-0-139"></a>
+<a id="__codelineno-0-140" name="__codelineno-0-140" href="#__codelineno-0-140"></a>System<span class="w"> </span>crashes
+<a id="__codelineno-0-141" name="__codelineno-0-141" href="#__codelineno-0-141"></a>Unexpected<span class="w"> </span>reboots
+<a id="__codelineno-0-142" name="__codelineno-0-142" href="#__codelineno-0-142"></a>Startup<span class="w"> </span>problems
+<a id="__codelineno-0-143" name="__codelineno-0-143" href="#__codelineno-0-143"></a>Previous<span class="w"> </span>Boot<span class="w"> </span>Logs
+<a id="__codelineno-0-144" name="__codelineno-0-144" href="#__codelineno-0-144"></a>
+<a id="__codelineno-0-145" name="__codelineno-0-145" href="#__codelineno-0-145"></a>View<span class="w"> </span>logs<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>previous<span class="w"> </span>boot:
+<a id="__codelineno-0-146" name="__codelineno-0-146" href="#__codelineno-0-146"></a>
+<a id="__codelineno-0-147" name="__codelineno-0-147" href="#__codelineno-0-147"></a>journalctl<span class="w"> </span>-b<span class="w"> </span>-1
+<a id="__codelineno-0-148" name="__codelineno-0-148" href="#__codelineno-0-148"></a>
+<a id="__codelineno-0-149" name="__codelineno-0-149" href="#__codelineno-0-149"></a>Useful<span class="w"> </span>when<span class="w"> </span>investigating:
+<a id="__codelineno-0-150" name="__codelineno-0-150" href="#__codelineno-0-150"></a>
+<a id="__codelineno-0-151" name="__codelineno-0-151" href="#__codelineno-0-151"></a>Failed<span class="w"> </span>boots
+<a id="__codelineno-0-152" name="__codelineno-0-152" href="#__codelineno-0-152"></a>System<span class="w"> </span>crashes
+<a id="__codelineno-0-153" name="__codelineno-0-153" href="#__codelineno-0-153"></a>Hardware<span class="w"> </span>problems
+<a id="__codelineno-0-154" name="__codelineno-0-154" href="#__codelineno-0-154"></a>Kernel<span class="w"> </span>Messages
+<a id="__codelineno-0-155" name="__codelineno-0-155" href="#__codelineno-0-155"></a>
+<a id="__codelineno-0-156" name="__codelineno-0-156" href="#__codelineno-0-156"></a>The<span class="w"> </span>kernel<span class="w"> </span>produces<span class="w"> </span>important<span class="w"> </span>system<span class="w"> </span>messages.
+<a id="__codelineno-0-157" name="__codelineno-0-157" href="#__codelineno-0-157"></a>
+<a id="__codelineno-0-158" name="__codelineno-0-158" href="#__codelineno-0-158"></a>View<span class="w"> </span>kernel<span class="w"> </span>messages:
+<a id="__codelineno-0-159" name="__codelineno-0-159" href="#__codelineno-0-159"></a>
+<a id="__codelineno-0-160" name="__codelineno-0-160" href="#__codelineno-0-160"></a>dmesg
+<a id="__codelineno-0-161" name="__codelineno-0-161" href="#__codelineno-0-161"></a>
+<a id="__codelineno-0-162" name="__codelineno-0-162" href="#__codelineno-0-162"></a>Examples:
+<a id="__codelineno-0-163" name="__codelineno-0-163" href="#__codelineno-0-163"></a>
+<a id="__codelineno-0-164" name="__codelineno-0-164" href="#__codelineno-0-164"></a>Hardware<span class="w"> </span>detection
+<a id="__codelineno-0-165" name="__codelineno-0-165" href="#__codelineno-0-165"></a>Driver<span class="w"> </span>messages
+<a id="__codelineno-0-166" name="__codelineno-0-166" href="#__codelineno-0-166"></a>Disk<span class="w"> </span>errors
+<a id="__codelineno-0-167" name="__codelineno-0-167" href="#__codelineno-0-167"></a>Network<span class="w"> </span>events
+<a id="__codelineno-0-168" name="__codelineno-0-168" href="#__codelineno-0-168"></a>
+<a id="__codelineno-0-169" name="__codelineno-0-169" href="#__codelineno-0-169"></a>Example:
+<a id="__codelineno-0-170" name="__codelineno-0-170" href="#__codelineno-0-170"></a>
+<a id="__codelineno-0-171" name="__codelineno-0-171" href="#__codelineno-0-171"></a>dmesg<span class="w"> </span><span class="p">|</span><span class="w"> </span>less
+<a id="__codelineno-0-172" name="__codelineno-0-172" href="#__codelineno-0-172"></a>Filtering<span class="w"> </span>Logs<span class="w"> </span>by<span class="w"> </span>Time
+<a id="__codelineno-0-173" name="__codelineno-0-173" href="#__codelineno-0-173"></a>
+<a id="__codelineno-0-174" name="__codelineno-0-174" href="#__codelineno-0-174"></a>View<span class="w"> </span>logs<span class="w"> </span>after<span class="w"> </span>a<span class="w"> </span>specific<span class="w"> </span>time:
+<a id="__codelineno-0-175" name="__codelineno-0-175" href="#__codelineno-0-175"></a>
+<a id="__codelineno-0-176" name="__codelineno-0-176" href="#__codelineno-0-176"></a>journalctl<span class="w"> </span>--since<span class="w"> </span><span class="s2">"1 hour ago"</span>
+<a id="__codelineno-0-177" name="__codelineno-0-177" href="#__codelineno-0-177"></a>
+<a id="__codelineno-0-178" name="__codelineno-0-178" href="#__codelineno-0-178"></a>Example:
+<a id="__codelineno-0-179" name="__codelineno-0-179" href="#__codelineno-0-179"></a>
+<a id="__codelineno-0-180" name="__codelineno-0-180" href="#__codelineno-0-180"></a>journalctl<span class="w"> </span>--since<span class="w"> </span>today
+<a id="__codelineno-0-181" name="__codelineno-0-181" href="#__codelineno-0-181"></a>
+<a id="__codelineno-0-182" name="__codelineno-0-182" href="#__codelineno-0-182"></a>View<span class="w"> </span>logs<span class="w"> </span>before<span class="w"> </span>a<span class="w"> </span>specific<span class="w"> </span>time:
+<a id="__codelineno-0-183" name="__codelineno-0-183" href="#__codelineno-0-183"></a>
+<a id="__codelineno-0-184" name="__codelineno-0-184" href="#__codelineno-0-184"></a>journalctl<span class="w"> </span>--until<span class="w"> </span><span class="s2">"10:00"</span>
+<a id="__codelineno-0-185" name="__codelineno-0-185" href="#__codelineno-0-185"></a>Searching<span class="w"> </span>Logs
+<a id="__codelineno-0-186" name="__codelineno-0-186" href="#__codelineno-0-186"></a>
+<a id="__codelineno-0-187" name="__codelineno-0-187" href="#__codelineno-0-187"></a>Use<span class="w"> </span>standard<span class="w"> </span>Linux<span class="w"> </span>tools<span class="w"> </span>with<span class="w"> </span>journalctl.
+<a id="__codelineno-0-188" name="__codelineno-0-188" href="#__codelineno-0-188"></a>
+<a id="__codelineno-0-189" name="__codelineno-0-189" href="#__codelineno-0-189"></a>Example:
+<a id="__codelineno-0-190" name="__codelineno-0-190" href="#__codelineno-0-190"></a>
+<a id="__codelineno-0-191" name="__codelineno-0-191" href="#__codelineno-0-191"></a>journalctl<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>ssh
+<a id="__codelineno-0-192" name="__codelineno-0-192" href="#__codelineno-0-192"></a>
+<a id="__codelineno-0-193" name="__codelineno-0-193" href="#__codelineno-0-193"></a>Search<span class="w"> </span><span class="k">for</span><span class="w"> </span>errors:
+<a id="__codelineno-0-194" name="__codelineno-0-194" href="#__codelineno-0-194"></a>
+<a id="__codelineno-0-195" name="__codelineno-0-195" href="#__codelineno-0-195"></a>journalctl<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>error
+<a id="__codelineno-0-196" name="__codelineno-0-196" href="#__codelineno-0-196"></a>Checking<span class="w"> </span>Service<span class="w"> </span>Failures
+<a id="__codelineno-0-197" name="__codelineno-0-197" href="#__codelineno-0-197"></a>
+<a id="__codelineno-0-198" name="__codelineno-0-198" href="#__codelineno-0-198"></a>When<span class="w"> </span>a<span class="w"> </span>service<span class="w"> </span>fails:
+<a id="__codelineno-0-199" name="__codelineno-0-199" href="#__codelineno-0-199"></a>
+<a id="__codelineno-0-200" name="__codelineno-0-200" href="#__codelineno-0-200"></a>First<span class="w"> </span>check<span class="w"> </span>status:
+<a id="__codelineno-0-201" name="__codelineno-0-201" href="#__codelineno-0-201"></a>
+<a id="__codelineno-0-202" name="__codelineno-0-202" href="#__codelineno-0-202"></a>systemctl<span class="w"> </span>status<span class="w"> </span>service_name
+<a id="__codelineno-0-203" name="__codelineno-0-203" href="#__codelineno-0-203"></a>
+<a id="__codelineno-0-204" name="__codelineno-0-204" href="#__codelineno-0-204"></a>Then<span class="w"> </span>check<span class="w"> </span>logs:
+<a id="__codelineno-0-205" name="__codelineno-0-205" href="#__codelineno-0-205"></a>
+<a id="__codelineno-0-206" name="__codelineno-0-206" href="#__codelineno-0-206"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>service_name
+<a id="__codelineno-0-207" name="__codelineno-0-207" href="#__codelineno-0-207"></a>
+<a id="__codelineno-0-208" name="__codelineno-0-208" href="#__codelineno-0-208"></a>Example:
+<a id="__codelineno-0-209" name="__codelineno-0-209" href="#__codelineno-0-209"></a>
+<a id="__codelineno-0-210" name="__codelineno-0-210" href="#__codelineno-0-210"></a>systemctl<span class="w"> </span>status<span class="w"> </span>nginx
+<a id="__codelineno-0-211" name="__codelineno-0-211" href="#__codelineno-0-211"></a>
+<a id="__codelineno-0-212" name="__codelineno-0-212" href="#__codelineno-0-212"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>nginx
+<a id="__codelineno-0-213" name="__codelineno-0-213" href="#__codelineno-0-213"></a>
+<a id="__codelineno-0-214" name="__codelineno-0-214" href="#__codelineno-0-214"></a>Troubleshooting<span class="w"> </span>approach:
+<a id="__codelineno-0-215" name="__codelineno-0-215" href="#__codelineno-0-215"></a>
+<a id="__codelineno-0-216" name="__codelineno-0-216" href="#__codelineno-0-216"></a>Check<span class="w"> </span>service<span class="w"> </span>status
+<a id="__codelineno-0-217" name="__codelineno-0-217" href="#__codelineno-0-217"></a>Review<span class="w"> </span>logs
+<a id="__codelineno-0-218" name="__codelineno-0-218" href="#__codelineno-0-218"></a>Identify<span class="w"> </span>the<span class="w"> </span>error
+<a id="__codelineno-0-219" name="__codelineno-0-219" href="#__codelineno-0-219"></a>Correct<span class="w"> </span>the<span class="w"> </span>issue
+<a id="__codelineno-0-220" name="__codelineno-0-220" href="#__codelineno-0-220"></a>Restart<span class="w"> </span>the<span class="w"> </span>service
+<a id="__codelineno-0-221" name="__codelineno-0-221" href="#__codelineno-0-221"></a>Log<span class="w"> </span>Storage
+<a id="__codelineno-0-222" name="__codelineno-0-222" href="#__codelineno-0-222"></a>
+<a id="__codelineno-0-223" name="__codelineno-0-223" href="#__codelineno-0-223"></a>The<span class="w"> </span>systemd<span class="w"> </span>journal<span class="w"> </span>can<span class="w"> </span>store<span class="w"> </span>logs:
+<a id="__codelineno-0-224" name="__codelineno-0-224" href="#__codelineno-0-224"></a>
+<a id="__codelineno-0-225" name="__codelineno-0-225" href="#__codelineno-0-225"></a>Temporary:
+<a id="__codelineno-0-226" name="__codelineno-0-226" href="#__codelineno-0-226"></a>
+<a id="__codelineno-0-227" name="__codelineno-0-227" href="#__codelineno-0-227"></a>/run/log/journal
+<a id="__codelineno-0-228" name="__codelineno-0-228" href="#__codelineno-0-228"></a>
+<a id="__codelineno-0-229" name="__codelineno-0-229" href="#__codelineno-0-229"></a>Persistent:
+<a id="__codelineno-0-230" name="__codelineno-0-230" href="#__codelineno-0-230"></a>
+<a id="__codelineno-0-231" name="__codelineno-0-231" href="#__codelineno-0-231"></a>/var/log/journal
+<a id="__codelineno-0-232" name="__codelineno-0-232" href="#__codelineno-0-232"></a>
+<a id="__codelineno-0-233" name="__codelineno-0-233" href="#__codelineno-0-233"></a>Check<span class="w"> </span>journal<span class="w"> </span>storage:
+<a id="__codelineno-0-234" name="__codelineno-0-234" href="#__codelineno-0-234"></a>
+<a id="__codelineno-0-235" name="__codelineno-0-235" href="#__codelineno-0-235"></a>journalctl<span class="w"> </span>--disk-usage
+<a id="__codelineno-0-236" name="__codelineno-0-236" href="#__codelineno-0-236"></a>Managing<span class="w"> </span>Journal<span class="w"> </span>Size
+<a id="__codelineno-0-237" name="__codelineno-0-237" href="#__codelineno-0-237"></a>
+<a id="__codelineno-0-238" name="__codelineno-0-238" href="#__codelineno-0-238"></a>View<span class="w"> </span>journal<span class="w"> </span>usage:
+<a id="__codelineno-0-239" name="__codelineno-0-239" href="#__codelineno-0-239"></a>
+<a id="__codelineno-0-240" name="__codelineno-0-240" href="#__codelineno-0-240"></a>journalctl<span class="w"> </span>--disk-usage
+<a id="__codelineno-0-241" name="__codelineno-0-241" href="#__codelineno-0-241"></a>
+<a id="__codelineno-0-242" name="__codelineno-0-242" href="#__codelineno-0-242"></a>Clean<span class="w"> </span>old<span class="w"> </span>logs:
+<a id="__codelineno-0-243" name="__codelineno-0-243" href="#__codelineno-0-243"></a>
+<a id="__codelineno-0-244" name="__codelineno-0-244" href="#__codelineno-0-244"></a>sudo<span class="w"> </span>journalctl<span class="w"> </span>--vacuum-time<span class="o">=</span>7d
+<a id="__codelineno-0-245" name="__codelineno-0-245" href="#__codelineno-0-245"></a>
+<a id="__codelineno-0-246" name="__codelineno-0-246" href="#__codelineno-0-246"></a>This<span class="w"> </span>removes<span class="w"> </span>logs<span class="w"> </span>older<span class="w"> </span>than<span class="w"> </span><span class="m">7</span><span class="w"> </span>days.
+<a id="__codelineno-0-247" name="__codelineno-0-247" href="#__codelineno-0-247"></a>
+<a id="__codelineno-0-248" name="__codelineno-0-248" href="#__codelineno-0-248"></a>Practical<span class="w"> </span>Exercise
+<a id="__codelineno-0-249" name="__codelineno-0-249" href="#__codelineno-0-249"></a>Task<span class="w"> </span><span class="m">1</span><span class="w"> </span>-<span class="w"> </span>View<span class="w"> </span>Recent<span class="w"> </span>Logs
+<a id="__codelineno-0-250" name="__codelineno-0-250" href="#__codelineno-0-250"></a>
+<a id="__codelineno-0-251" name="__codelineno-0-251" href="#__codelineno-0-251"></a>Run:
+<a id="__codelineno-0-252" name="__codelineno-0-252" href="#__codelineno-0-252"></a>
+<a id="__codelineno-0-253" name="__codelineno-0-253" href="#__codelineno-0-253"></a>journalctl<span class="w"> </span>-n<span class="w"> </span><span class="m">20</span>
+<a id="__codelineno-0-254" name="__codelineno-0-254" href="#__codelineno-0-254"></a>
+<a id="__codelineno-0-255" name="__codelineno-0-255" href="#__codelineno-0-255"></a>Identify:
+<a id="__codelineno-0-256" name="__codelineno-0-256" href="#__codelineno-0-256"></a>
+<a id="__codelineno-0-257" name="__codelineno-0-257" href="#__codelineno-0-257"></a>Recent<span class="w"> </span>system<span class="w"> </span>events
+<a id="__codelineno-0-258" name="__codelineno-0-258" href="#__codelineno-0-258"></a>Running<span class="w"> </span>services
+<a id="__codelineno-0-259" name="__codelineno-0-259" href="#__codelineno-0-259"></a>Task<span class="w"> </span><span class="m">2</span><span class="w"> </span>-<span class="w"> </span>Check<span class="w"> </span>SSH<span class="w"> </span>Logs
+<a id="__codelineno-0-260" name="__codelineno-0-260" href="#__codelineno-0-260"></a>
+<a id="__codelineno-0-261" name="__codelineno-0-261" href="#__codelineno-0-261"></a>Run:
+<a id="__codelineno-0-262" name="__codelineno-0-262" href="#__codelineno-0-262"></a>
+<a id="__codelineno-0-263" name="__codelineno-0-263" href="#__codelineno-0-263"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>ssh
+<a id="__codelineno-0-264" name="__codelineno-0-264" href="#__codelineno-0-264"></a>
+<a id="__codelineno-0-265" name="__codelineno-0-265" href="#__codelineno-0-265"></a>Find:
+<a id="__codelineno-0-266" name="__codelineno-0-266" href="#__codelineno-0-266"></a>
+<a id="__codelineno-0-267" name="__codelineno-0-267" href="#__codelineno-0-267"></a>Service<span class="w"> </span>startup<span class="w"> </span>messages
+<a id="__codelineno-0-268" name="__codelineno-0-268" href="#__codelineno-0-268"></a>Login<span class="w"> </span>events
+<a id="__codelineno-0-269" name="__codelineno-0-269" href="#__codelineno-0-269"></a>Task<span class="w"> </span><span class="m">3</span><span class="w"> </span>-<span class="w"> </span>Find<span class="w"> </span>Errors
+<a id="__codelineno-0-270" name="__codelineno-0-270" href="#__codelineno-0-270"></a>
+<a id="__codelineno-0-271" name="__codelineno-0-271" href="#__codelineno-0-271"></a>Run:
+<a id="__codelineno-0-272" name="__codelineno-0-272" href="#__codelineno-0-272"></a>
+<a id="__codelineno-0-273" name="__codelineno-0-273" href="#__codelineno-0-273"></a>journalctl<span class="w"> </span>-p<span class="w"> </span>err
+<a id="__codelineno-0-274" name="__codelineno-0-274" href="#__codelineno-0-274"></a>
+<a id="__codelineno-0-275" name="__codelineno-0-275" href="#__codelineno-0-275"></a>Record:
+<a id="__codelineno-0-276" name="__codelineno-0-276" href="#__codelineno-0-276"></a>
+<a id="__codelineno-0-277" name="__codelineno-0-277" href="#__codelineno-0-277"></a>Errors<span class="w"> </span>found:
+<a id="__codelineno-0-278" name="__codelineno-0-278" href="#__codelineno-0-278"></a>Task<span class="w"> </span><span class="m">4</span><span class="w"> </span>-<span class="w"> </span>Check<span class="w"> </span>Kernel<span class="w"> </span>Messages
+<a id="__codelineno-0-279" name="__codelineno-0-279" href="#__codelineno-0-279"></a>
+<a id="__codelineno-0-280" name="__codelineno-0-280" href="#__codelineno-0-280"></a>Run:
+<a id="__codelineno-0-281" name="__codelineno-0-281" href="#__codelineno-0-281"></a>
+<a id="__codelineno-0-282" name="__codelineno-0-282" href="#__codelineno-0-282"></a>dmesg<span class="w"> </span><span class="p">|</span><span class="w"> </span>less
+<a id="__codelineno-0-283" name="__codelineno-0-283" href="#__codelineno-0-283"></a>
+<a id="__codelineno-0-284" name="__codelineno-0-284" href="#__codelineno-0-284"></a>Identify:
+<a id="__codelineno-0-285" name="__codelineno-0-285" href="#__codelineno-0-285"></a>
+<a id="__codelineno-0-286" name="__codelineno-0-286" href="#__codelineno-0-286"></a>Hardware<span class="w"> </span>messages
+<a id="__codelineno-0-287" name="__codelineno-0-287" href="#__codelineno-0-287"></a>Driver<span class="w"> </span>information
+<a id="__codelineno-0-288" name="__codelineno-0-288" href="#__codelineno-0-288"></a>Knowledge<span class="w"> </span>Check
+<a id="__codelineno-0-289" name="__codelineno-0-289" href="#__codelineno-0-289"></a>Where<span class="w"> </span>are<span class="w"> </span>traditional<span class="w"> </span>Linux<span class="w"> </span>log<span class="w"> </span>files<span class="w"> </span>stored?
+<a id="__codelineno-0-290" name="__codelineno-0-290" href="#__codelineno-0-290"></a>What<span class="w"> </span><span class="nb">command</span><span class="w"> </span>displays<span class="w"> </span>the<span class="w"> </span>systemd<span class="w"> </span>journal?
+<a id="__codelineno-0-291" name="__codelineno-0-291" href="#__codelineno-0-291"></a>How<span class="w"> </span><span class="k">do</span><span class="w"> </span>you<span class="w"> </span>view<span class="w"> </span>logs<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>specific<span class="w"> </span>service?
+<a id="__codelineno-0-292" name="__codelineno-0-292" href="#__codelineno-0-292"></a>What<span class="w"> </span>option<span class="w"> </span>shows<span class="w"> </span>logs<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>current<span class="w"> </span>boot?
+<a id="__codelineno-0-293" name="__codelineno-0-293" href="#__codelineno-0-293"></a>What<span class="w"> </span><span class="nb">command</span><span class="w"> </span>displays<span class="w"> </span>kernel<span class="w"> </span>messages?
+<a id="__codelineno-0-294" name="__codelineno-0-294" href="#__codelineno-0-294"></a>Why<span class="w"> </span>are<span class="w"> </span>logs<span class="w"> </span>important<span class="w"> </span><span class="k">for</span><span class="w"> </span>administrators?
+<a id="__codelineno-0-295" name="__codelineno-0-295" href="#__codelineno-0-295"></a>Summary
+<a id="__codelineno-0-296" name="__codelineno-0-296" href="#__codelineno-0-296"></a>
+<a id="__codelineno-0-297" name="__codelineno-0-297" href="#__codelineno-0-297"></a>In<span class="w"> </span>this<span class="w"> </span>lesson<span class="w"> </span>you<span class="w"> </span>learned:
+<a id="__codelineno-0-298" name="__codelineno-0-298" href="#__codelineno-0-298"></a>
+<a id="__codelineno-0-299" name="__codelineno-0-299" href="#__codelineno-0-299"></a>✓<span class="w"> </span>Why<span class="w"> </span>Linux<span class="w"> </span>logging<span class="w"> </span>is<span class="w"> </span>important
+<a id="__codelineno-0-300" name="__codelineno-0-300" href="#__codelineno-0-300"></a>✓<span class="w"> </span>The<span class="w"> </span>difference<span class="w"> </span>between<span class="w"> </span>traditional<span class="w"> </span>logs<span class="w"> </span>and<span class="w"> </span>systemd<span class="w"> </span>journal
+<a id="__codelineno-0-301" name="__codelineno-0-301" href="#__codelineno-0-301"></a>✓<span class="w"> </span>How<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span>journalctl
+<a id="__codelineno-0-302" name="__codelineno-0-302" href="#__codelineno-0-302"></a>✓<span class="w"> </span>How<span class="w"> </span>to<span class="w"> </span>view<span class="w"> </span>service<span class="w"> </span>logs
+<a id="__codelineno-0-303" name="__codelineno-0-303" href="#__codelineno-0-303"></a>✓<span class="w"> </span>How<span class="w"> </span>to<span class="w"> </span>investigate<span class="w"> </span>failures
+<a id="__codelineno-0-304" name="__codelineno-0-304" href="#__codelineno-0-304"></a>✓<span class="w"> </span>How<span class="w"> </span>to<span class="w"> </span>analyse<span class="w"> </span>system<span class="w"> </span>events
+<a id="__codelineno-0-305" name="__codelineno-0-305" href="#__codelineno-0-305"></a>
+<a id="__codelineno-0-306" name="__codelineno-0-306" href="#__codelineno-0-306"></a>Next<span class="w"> </span>Lesson#<span class="w"> </span>Lesson<span class="w"> </span><span class="m">04</span><span class="w"> </span>-<span class="w"> </span>Logs<span class="w"> </span>and<span class="w"> </span>journalctl
+<a id="__codelineno-0-307" name="__codelineno-0-307" href="#__codelineno-0-307"></a>
+<a id="__codelineno-0-308" name="__codelineno-0-308" href="#__codelineno-0-308"></a>&gt;<span class="w"> </span>**Estimated<span class="w"> </span>time:**<span class="w"> </span><span class="m">60</span>–90<span class="w"> </span>minutes<span class="w">  </span>
+<a id="__codelineno-0-309" name="__codelineno-0-309" href="#__codelineno-0-309"></a>&gt;
+<a id="__codelineno-0-310" name="__codelineno-0-310" href="#__codelineno-0-310"></a>&gt;<span class="w"> </span>**Prerequisites:**
+<a id="__codelineno-0-311" name="__codelineno-0-311" href="#__codelineno-0-311"></a>&gt;<span class="w"> </span>-<span class="w"> </span>Module<span class="w"> </span><span class="m">04</span><span class="w"> </span>–<span class="w"> </span>Processes<span class="w"> </span>and<span class="w"> </span>Services
+<a id="__codelineno-0-312" name="__codelineno-0-312" href="#__codelineno-0-312"></a>&gt;<span class="w"> </span>-<span class="w"> </span>Lesson<span class="w"> </span><span class="m">03</span><span class="w"> </span>–<span class="w"> </span>Systemd<span class="w"> </span>and<span class="w"> </span>Service<span class="w"> </span>Management
+<a id="__codelineno-0-313" name="__codelineno-0-313" href="#__codelineno-0-313"></a>&gt;
+<a id="__codelineno-0-314" name="__codelineno-0-314" href="#__codelineno-0-314"></a>&gt;<span class="w"> </span>**Difficulty:**<span class="w"> </span>Beginner<span class="w"> </span>to<span class="w"> </span>Intermediate
+<a id="__codelineno-0-315" name="__codelineno-0-315" href="#__codelineno-0-315"></a>&gt;
+<a id="__codelineno-0-316" name="__codelineno-0-316" href="#__codelineno-0-316"></a>&gt;<span class="w"> </span>**Hands-on<span class="w"> </span>exercises:**<span class="w"> </span>Yes
+<a id="__codelineno-0-317" name="__codelineno-0-317" href="#__codelineno-0-317"></a>
+<a id="__codelineno-0-318" name="__codelineno-0-318" href="#__codelineno-0-318"></a>---
+<a id="__codelineno-0-319" name="__codelineno-0-319" href="#__codelineno-0-319"></a>
+<a id="__codelineno-0-320" name="__codelineno-0-320" href="#__codelineno-0-320"></a><span class="c1"># Overview</span>
+<a id="__codelineno-0-321" name="__codelineno-0-321" href="#__codelineno-0-321"></a>
+<a id="__codelineno-0-322" name="__codelineno-0-322" href="#__codelineno-0-322"></a>Linux<span class="w"> </span>systems<span class="w"> </span>generate<span class="w"> </span>a<span class="w"> </span>large<span class="w"> </span>amount<span class="w"> </span>of<span class="w"> </span>information<span class="w"> </span>about<span class="w"> </span>what<span class="w"> </span>is<span class="w"> </span>happening<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span>system.
+<a id="__codelineno-0-323" name="__codelineno-0-323" href="#__codelineno-0-323"></a>
+<a id="__codelineno-0-324" name="__codelineno-0-324" href="#__codelineno-0-324"></a>This<span class="w"> </span>information<span class="w"> </span>is<span class="w"> </span>stored<span class="w"> </span><span class="k">in</span><span class="w"> </span>logs.
+<a id="__codelineno-0-325" name="__codelineno-0-325" href="#__codelineno-0-325"></a>
+<a id="__codelineno-0-326" name="__codelineno-0-326" href="#__codelineno-0-326"></a>Logs<span class="w"> </span><span class="nb">help</span><span class="w"> </span>administrators:
+<a id="__codelineno-0-327" name="__codelineno-0-327" href="#__codelineno-0-327"></a>
+<a id="__codelineno-0-328" name="__codelineno-0-328" href="#__codelineno-0-328"></a>-<span class="w"> </span>Troubleshoot<span class="w"> </span>problems
+<a id="__codelineno-0-329" name="__codelineno-0-329" href="#__codelineno-0-329"></a>-<span class="w"> </span>Investigate<span class="w"> </span>service<span class="w"> </span>failures
+<a id="__codelineno-0-330" name="__codelineno-0-330" href="#__codelineno-0-330"></a>-<span class="w"> </span>Monitor<span class="w"> </span>system<span class="w"> </span>activity
+<a id="__codelineno-0-331" name="__codelineno-0-331" href="#__codelineno-0-331"></a>-<span class="w"> </span>Identify<span class="w"> </span>security<span class="w"> </span>events
+<a id="__codelineno-0-332" name="__codelineno-0-332" href="#__codelineno-0-332"></a>-<span class="w"> </span>Understand<span class="w"> </span>system<span class="w"> </span>behaviour
+<a id="__codelineno-0-333" name="__codelineno-0-333" href="#__codelineno-0-333"></a>
+<a id="__codelineno-0-334" name="__codelineno-0-334" href="#__codelineno-0-334"></a>Modern<span class="w"> </span>Linux<span class="w"> </span>systems<span class="w"> </span>use<span class="w"> </span>**systemd-journald**<span class="w"> </span>to<span class="w"> </span>collect<span class="w"> </span>and<span class="w"> </span>manage<span class="w"> </span>system<span class="w"> </span>logs.
+<a id="__codelineno-0-335" name="__codelineno-0-335" href="#__codelineno-0-335"></a>
+<a id="__codelineno-0-336" name="__codelineno-0-336" href="#__codelineno-0-336"></a>The<span class="w"> </span>main<span class="w"> </span>tool<span class="w"> </span>used<span class="w"> </span>to<span class="w"> </span>view<span class="w"> </span>these<span class="w"> </span>logs<span class="w"> </span>is:
+<a id="__codelineno-0-337" name="__codelineno-0-337" href="#__codelineno-0-337"></a>
+<a id="__codelineno-0-338" name="__codelineno-0-338" href="#__codelineno-0-338"></a><span class="sb">```</span>bash
+<a id="__codelineno-0-339" name="__codelineno-0-339" href="#__codelineno-0-339"></a>journalctl
+</code></pre></div>
+<hr />
+<h1 id="linux-logging">Linux Logging<a class="headerlink" href="#linux-logging" title="Permanent link">&para;</a></h1>
+<p>Linux records information about:</p>
+<ul>
+<li>System startup</li>
+<li>Running services</li>
+<li>User activity</li>
+<li>Hardware events</li>
+<li>Application messages</li>
+<li>Security events</li>
+</ul>
+<p>Examples of logs:</p>
+<table>
+<thead>
+<tr>
+<th>Log Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authentication</td>
+<td>SSH login attempts</td>
+</tr>
+<tr>
+<td>System</td>
+<td>Kernel messages</td>
+</tr>
+<tr>
+<td>Services</td>
+<td>Service startup failures</td>
+</tr>
+<tr>
+<td>Applications</td>
+<td>Application errors</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="traditional-log-files">Traditional Log Files<a class="headerlink" href="#traditional-log-files" title="Permanent link">&para;</a></h1>
+<p>Historically, Linux stored logs in:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>/var/log
+</code></pre></div>
+<p>View the directory:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ls<span class="w"> </span>/var/log
+</code></pre></div>
+<p>Common log files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>auth.log</td>
+<td>Authentication events</td>
+</tr>
+<tr>
+<td>syslog</td>
+<td>General system messages</td>
+</tr>
+<tr>
+<td>kern.log</td>
+<td>Kernel messages</td>
+</tr>
+<tr>
+<td>dpkg.log</td>
+<td>Package management events</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>cat<span class="w"> </span>/var/log/syslog
+</code></pre></div>
+<hr />
+<h1 id="systemd-journal">systemd Journal<a class="headerlink" href="#systemd-journal" title="Permanent link">&para;</a></h1>
+<p>Modern Linux distributions use the systemd journal.</p>
+<p>The journal collects messages from:</p>
+<ul>
+<li>The kernel</li>
+<li>System services</li>
+<li>Applications</li>
+<li>User sessions</li>
+</ul>
+<p>The journal is managed by:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>systemd-journald
+</code></pre></div>
+<p>Check the service:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>systemctl<span class="w"> </span>status<span class="w"> </span>systemd-journald
+</code></pre></div>
+<hr />
+<h1 id="viewing-logs-with-journalctl">Viewing Logs with journalctl<a class="headerlink" href="#viewing-logs-with-journalctl" title="Permanent link">&para;</a></h1>
+<p>The basic command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>journalctl
+</code></pre></div>
+<p>Displays the system journal.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Jul 31 10:15:01 server systemd[1]: Started SSH service.
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Jul 31 10:15:02 server sshd[500]: Accepted password login.
+</code></pre></div>
+<hr />
+<h1 id="viewing-recent-logs">Viewing Recent Logs<a class="headerlink" href="#viewing-recent-logs" title="Permanent link">&para;</a></h1>
+<p>Show the latest log entries:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>journalctl<span class="w"> </span>-n
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>journalctl<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span>
+</code></pre></div>
+<p>This displays the last 50 entries.</p>
+<hr />
+<h1 id="following-live-logs">Following Live Logs<a class="headerlink" href="#following-live-logs" title="Permanent link">&para;</a></h1>
+<p>Similar to <code>tail -f</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>journalctl<span class="w"> </span>-f
+</code></pre></div>
+<p>This displays new log entries as they appear.</p>
+<p>Useful when:</p>
+<ul>
+<li>Starting services</li>
+<li>Testing changes</li>
+<li>Troubleshooting problems</li>
+</ul>
+<p>Exit using:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>CTRL + C
+</code></pre></div>
+<hr />
+<h1 id="viewing-logs-for-a-service">Viewing Logs for a Service<a class="headerlink" href="#viewing-logs-for-a-service" title="Permanent link">&para;</a></h1>
+<p>To view logs for a specific service:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>service_name
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>ssh
+</code></pre></div>
+<p>This shows only SSH service logs.</p>
+<hr />
+<h1 id="viewing-recent-service-failures">Viewing Recent Service Failures<a class="headerlink" href="#viewing-recent-service-failures" title="Permanent link">&para;</a></h1>
+<p>Show recent errors:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>journalctl<span class="w"> </span>-p<span class="w"> </span>err
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>Failed to start nginx.service
+</code></pre></div>
+<p>Priority levels include:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>emerg</td>
+<td>System unusable</td>
+</tr>
+<tr>
+<td>alert</td>
+<td>Immediate action required</td>
+</tr>
+<tr>
+<td>crit</td>
+<td>Critical error</td>
+</tr>
+<tr>
+<td>err</td>
+<td>Error</td>
+</tr>
+<tr>
+<td>warning</td>
+<td>Warning</td>
+</tr>
+<tr>
+<td>info</td>
+<td>Information</td>
+</tr>
+<tr>
+<td>debug</td>
+<td>Debug messages</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="viewing-logs-since-boot">Viewing Logs Since Boot<a class="headerlink" href="#viewing-logs-since-boot" title="Permanent link">&para;</a></h1>
+<p>View logs from the current boot:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>journalctl<span class="w"> </span>-b
+</code></pre></div>
+<p>Useful after:</p>
+<ul>
+<li>System crashes</li>
+<li>Unexpected reboots</li>
+<li>Startup problems</li>
+</ul>
+<hr />
+<h1 id="previous-boot-logs">Previous Boot Logs<a class="headerlink" href="#previous-boot-logs" title="Permanent link">&para;</a></h1>
+<p>View logs from the previous boot:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>journalctl<span class="w"> </span>-b<span class="w"> </span>-1
+</code></pre></div>
+<p>Useful when investigating:</p>
+<ul>
+<li>Failed boots</li>
+<li>System crashes</li>
+<li>Hardware problems</li>
+</ul>
+<hr />
+<h1 id="kernel-messages">Kernel Messages<a class="headerlink" href="#kernel-messages" title="Permanent link">&para;</a></h1>
+<p>The kernel produces important system messages.</p>
+<p>View kernel messages:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>dmesg
+</code></pre></div>
+<p>Examples:</p>
+<ul>
+<li>Hardware detection</li>
+<li>Driver messages</li>
+<li>Disk errors</li>
+<li>Network events</li>
+</ul>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>dmesg<span class="w"> </span><span class="p">|</span><span class="w"> </span>less
+</code></pre></div>
+<hr />
+<h1 id="filtering-logs-by-time">Filtering Logs by Time<a class="headerlink" href="#filtering-logs-by-time" title="Permanent link">&para;</a></h1>
+<p>View logs after a specific time:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>journalctl<span class="w"> </span>--since<span class="w"> </span><span class="s2">"1 hour ago"</span>
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>journalctl<span class="w"> </span>--since<span class="w"> </span>today
+</code></pre></div>
+<p>View logs before a specific time:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>journalctl<span class="w"> </span>--until<span class="w"> </span><span class="s2">"10:00"</span>
+</code></pre></div>
+<hr />
+<h1 id="searching-logs">Searching Logs<a class="headerlink" href="#searching-logs" title="Permanent link">&para;</a></h1>
+<p>Use standard Linux tools with journalctl.</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>journalctl<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>ssh
+</code></pre></div>
+<p>Search for errors:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>journalctl<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>error
+</code></pre></div>
+<hr />
+<h1 id="checking-service-failures">Checking Service Failures<a class="headerlink" href="#checking-service-failures" title="Permanent link">&para;</a></h1>
+<p>When a service fails:</p>
+<h2 id="step-1-check-service-status">Step 1 - Check Service Status<a class="headerlink" href="#step-1-check-service-status" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>systemctl<span class="w"> </span>status<span class="w"> </span>service_name
+</code></pre></div>
+<h2 id="step-2-check-logs">Step 2 - Check Logs<a class="headerlink" href="#step-2-check-logs" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>service_name
+</code></pre></div>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>systemctl<span class="w"> </span>status<span class="w"> </span>nginx
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>nginx
+</code></pre></div>
+<p>Troubleshooting approach:</p>
+<ol>
+<li>Check service status</li>
+<li>Review logs</li>
+<li>Identify the error</li>
+<li>Correct the issue</li>
+<li>Restart the service</li>
+</ol>
+<hr />
+<h1 id="log-storage">Log Storage<a class="headerlink" href="#log-storage" title="Permanent link">&para;</a></h1>
+<p>The systemd journal can store logs in two locations.</p>
+<p>Temporary:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>/run/log/journal
+</code></pre></div>
+<p>Persistent:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>/var/log/journal
+</code></pre></div>
+<p>Check journal storage:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>journalctl<span class="w"> </span>--disk-usage
+</code></pre></div>
+<hr />
+<h1 id="managing-journal-size">Managing Journal Size<a class="headerlink" href="#managing-journal-size" title="Permanent link">&para;</a></h1>
+<p>View journal usage:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>journalctl<span class="w"> </span>--disk-usage
+</code></pre></div>
+<p>Clean old logs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>sudo<span class="w"> </span>journalctl<span class="w"> </span>--vacuum-time<span class="o">=</span>7d
+</code></pre></div>
+<p>This removes logs older than 7 days.</p>
+<hr />
+<h1 id="practical-exercises">Practical Exercises<a class="headerlink" href="#practical-exercises" title="Permanent link">&para;</a></h1>
+<h2 id="task-1-view-recent-logs">Task 1 - View Recent Logs<a class="headerlink" href="#task-1-view-recent-logs" title="Permanent link">&para;</a></h2>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>journalctl<span class="w"> </span>-n<span class="w"> </span><span class="m">20</span>
+</code></pre></div>
+<p>Identify:</p>
+<ul>
+<li>Recent system events</li>
+<li>Running services</li>
+</ul>
+<hr />
+<h2 id="task-2-check-ssh-logs">Task 2 - Check SSH Logs<a class="headerlink" href="#task-2-check-ssh-logs" title="Permanent link">&para;</a></h2>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>journalctl<span class="w"> </span>-u<span class="w"> </span>ssh
+</code></pre></div>
+<p>Find:</p>
+<ul>
+<li>Service startup messages</li>
+<li>Login events</li>
+</ul>
+<hr />
+<h2 id="task-3-find-errors">Task 3 - Find Errors<a class="headerlink" href="#task-3-find-errors" title="Permanent link">&para;</a></h2>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>journalctl<span class="w"> </span>-p<span class="w"> </span>err
+</code></pre></div>
+<p>Record:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>Errors found:
+</code></pre></div>
+<hr />
+<h2 id="task-4-check-kernel-messages">Task 4 - Check Kernel Messages<a class="headerlink" href="#task-4-check-kernel-messages" title="Permanent link">&para;</a></h2>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>dmesg<span class="w"> </span><span class="p">|</span><span class="w"> </span>less
+</code></pre></div>
+<p>Identify:</p>
+<ul>
+<li>Hardware messages</li>
+<li>Driver information</li>
+</ul>
+<hr />
+<h1 id="knowledge-check">Knowledge Check<a class="headerlink" href="#knowledge-check" title="Permanent link">&para;</a></h1>
+<ol>
+<li>
+<p>Where are traditional Linux log files stored?</p>
+</li>
+<li>
+<p>What command displays the systemd journal?</p>
+</li>
+<li>
+<p>How do you view logs for a specific service?</p>
+</li>
+<li>
+<p>What option shows logs from the current boot?</p>
+</li>
+<li>
+<p>What command displays kernel messages?</p>
+</li>
+<li>
+<p>Why are logs important for administrators?</p>
+</li>
+</ol>
+<hr />
+<h1 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h1>
+<p>In this lesson you learned:</p>
+<p>✓ Why Linux logging is important<br />
+✓ The difference between traditional logs and systemd journal<br />
+✓ How to use journalctl<br />
+✓ How to view service logs<br />
+✓ How to investigate failures<br />
+✓ How to analyse system events  </p>
+<hr />
+<h1 id="next-lesson">Next Lesson<a class="headerlink" href="#next-lesson" title="Permanent link">&para;</a></h1>
+<h2 id="lesson-05-processes-and-services-administration-lab">Lesson 05 - Processes and Services Administration Lab<a class="headerlink" href="#lesson-05-processes-and-services-administration-lab" title="Permanent link">&para;</a></h2>
+<p>You will complete practical tasks covering:</p>
+<ul>
+<li>Process monitoring</li>
+<li>Service management</li>
+<li>Log analysis</li>
+<li>Troubleshooting failures</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../lesson-03-systemd-and-service-management/" class="md-footer__link md-footer__link--prev" aria-label="Previous: systemd &amp; Services">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                systemd & Services
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../lesson-05-processes-and-services-lab/" class="md-footer__link md-footer__link--next" aria-label="Next: Processes &amp; Services Lab">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Processes & Services Lab
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 James Roberts
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
